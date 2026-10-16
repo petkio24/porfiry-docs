@@ -5,3 +5,4 @@
 - [porfiry-fix-2.zip](porfiry-fix-2.zip) — исправление 2 одним архивом: новый контроллер, тесты, apply.sh, rollback.sh, проверка porfiry-selfcheck.php, porfiry-check.sh и инструкция. Внутри — [porfiry-fix-2.pdf](porfiry-fix-2.pdf).
 - [porfiry-diag-3.zip](porfiry-diag-3.zip) — диагностика 3: рвёт ли Apache поток. Инструкция — README.txt в архиве.
 - [porfiry-apache-config.txt](porfiry-apache-config.txt) — что в Apache/PHP может обрывать поток и что поменять (то же — CONFIG.txt в porfiry-diag-3.zip).
+- [porfiry-fix-3.zip](porfiry-fix-3.zip) — исправление 3: правка Apache для потока чата (apache-fix.sh для 000-default) + проверка apache-check.sh. Инструкция — INSTRUCTION.txt в архиве.
