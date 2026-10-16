@@ -1,0 +1,58 @@
+Что в Apache/PHP может обрывать поток после первого куска и что поменять.
+
+Факты: PHP дописал ответ до конца, но уже после первого куска не смог
+отдать его Apache («обрыв связи после куска 1»). Через php artisan serve
+(порт 8000) всё работает. Значит, обрывает Apache или что-то на пути от него.
+
+Правки вносить в <VirtualHost> сайта: файл покажет apache-check.sh
+(раздел «Сайт в конфиге Apache»). После каждой правки:
+  sudo apache2ctl configtest && sudo systemctl restart apache2
+затем вопрос в браузере и  tail -1 "$SITE"/storage/logs/porfiry.log
+Не помогло — правку убрать и перейти к следующей.
+
+1. Ответ чата без chunked, как у artisan serve (пробовать первым).
+   artisan serve отдаёт поток без Transfer-Encoding: chunked и закрывает
+   соединение в конце. Apache режет поток на chunked-куски — антивирус,
+   прокси или DLP на пути часто пропускают первый кусок и закрывают ответ.
+   Строку с SetEnvIfExpr ... no-gzip заменить на (одна строка):
+     SetEnvIfExpr "%{THE_REQUEST} =~ m#/chat/#" force-response-1.0 downgrade-1.0 nokeepalive no-gzip dont-vary
+   Без ^[A-Z]+ — сработает и если сайт открыт из подпапки (/portal/chat/).
+
+2. Антивирус на сервере или на ПК (Kaspersky и т. п., «защита от веб-угроз»).
+   Он проверяет HTTP на порту 80 и не трогает 8000 — ровно ваша картина.
+   Проверка: в журнале антивируса строки про адрес сервера. Решение —
+   исключение для адреса сервера (или процесса apache2).
+   Быстрая проверка без антивируса: Apache на втором порту:
+     в /etc/apache2/ports.conf добавить  Listen 8081
+     в файле сайта скопировать <VirtualHost *:80> ... </VirtualHost>
+     целиком и в копии поменять 80 на 8081; открыть чат на :8081.
+
+3. Сжатие (mod_deflate). Правило «^[A-Z]+ /chat/» не срабатывает, если
+   сайт в подпапке. Пункт 1 это уже лечит (no-gzip в той же строке).
+   В php.ini (apache2 или fpm): zlib.output_compression = Off,
+   output_handler — пусто.
+
+4. ModSecurity (модуль security2 в списке apache-check). Копит и режет
+   ответы. В <VirtualHost>:
+     <LocationMatch "/chat/">
+         SecRuleEngine Off
+         SecResponseBodyAccess Off
+     </LocationMatch>
+
+5. HTTPS с HTTP/2 (модуль http2, строка Protocols h2 ...). В <VirtualHost>:
+     Protocols http/1.1
+
+6. Два способа запуска PHP сразу: и mod_php (php8.1), и php-fpm
+   (conf php8.1-fpm). Оставить один:
+   mod_php:  sudo a2disconf php8.1-fpm
+   php-fpm:  sudo a2dismod php8.1, и в <VirtualHost> обязательно
+     <Proxy "fcgi://localhost">
+         ProxySet flushpackets=on timeout=1900
+     </Proxy>
+
+7. Перед Apache стоит другой сервер (nginx, балансировщик, ProxyPass в
+   конфиге сайта). Для nginx на /chat/: proxy_buffering off;
+   proxy_read_timeout 1900s; chunked_transfer_encoding off;
+
+8. php.ini: disable_functions не должен содержать flush, ob_flush,
+   ignore_user_abort, connection_aborted, set_time_limit.
