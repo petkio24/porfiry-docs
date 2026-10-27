@@ -6,4 +6,4 @@
 - [porfiry-diag-3.zip](porfiry-diag-3.zip) — диагностика 3: рвёт ли Apache поток. Инструкция — README.txt в архиве.
 - [porfiry-apache-config.txt](porfiry-apache-config.txt) — что в Apache/PHP может обрывать поток и что поменять (то же — CONFIG.txt в porfiry-diag-3.zip).
 - [porfiry-fix-3.zip](porfiry-fix-3.zip) — исправление 3: правка Apache для потока чата (apache-fix.sh для 000-default) + проверка apache-check.sh. Инструкция — INSTRUCTION.txt в архиве.
-- [porfiry-update-science.zip](porfiry-update-science.zip) — обновление v2: научный чат (Qwen3.6 на сервере .170), карточка очереди, строгий стиль, ODT/PDF без экрана; скрипты science-170.sh и update-web.sh. Одна инструкция — ОБНОВЛЕНИЕ.pdf в архиве (в начале — что делать, если обновление уже стоит).
+- [porfiry-fix-science.zip](porfiry-fix-science.zip) — научный чат (Qwen3.6 на сервере .170), карточка очереди, строгий стиль, ODT/PDF без экрана, ответ не обрывается, пока модель рассуждает. Скрипты science-170.sh и update-web.sh, одна инструкция — ОБНОВЛЕНИЕ.pdf в архиве (в начале — что делать, если стоит прежний update-science).
